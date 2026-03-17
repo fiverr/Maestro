@@ -165,6 +165,40 @@ class Maestro(
         waitForAppToSettle(waitToSettleTimeoutMs = waitToSettleTimeoutMs)
     }
 
+    fun swipeWithinBounds(
+        bounds: Bounds,
+        swipeDirection: SwipeDirection,
+        durationMs: Long,
+        waitToSettleTimeoutMs: Int?
+    ) {
+        LOGGER.info("Swiping ${swipeDirection.name} within bounds $bounds")
+
+        val startPoint: Point
+        val endPoint: Point
+
+        when (swipeDirection) {
+            SwipeDirection.UP -> {
+                startPoint = Point(bounds.x + bounds.width / 2, bounds.y + (bounds.height * 0.8).toInt())
+                endPoint = Point(bounds.x + bounds.width / 2, bounds.y + (bounds.height * 0.2).toInt())
+            }
+            SwipeDirection.DOWN -> {
+                startPoint = Point(bounds.x + bounds.width / 2, bounds.y + (bounds.height * 0.2).toInt())
+                endPoint = Point(bounds.x + bounds.width / 2, bounds.y + (bounds.height * 0.8).toInt())
+            }
+            SwipeDirection.LEFT -> {
+                startPoint = Point(bounds.x + (bounds.width * 0.8).toInt(), bounds.y + bounds.height / 2)
+                endPoint = Point(bounds.x + (bounds.width * 0.2).toInt(), bounds.y + bounds.height / 2)
+            }
+            SwipeDirection.RIGHT -> {
+                startPoint = Point(bounds.x + (bounds.width * 0.2).toInt(), bounds.y + bounds.height / 2)
+                endPoint = Point(bounds.x + (bounds.width * 0.8).toInt(), bounds.y + bounds.height / 2)
+            }
+        }
+
+        driver.swipe(startPoint, endPoint, durationMs)
+        waitForAppToSettle(waitToSettleTimeoutMs = waitToSettleTimeoutMs)
+    }
+
     fun scrollVertical() {
         LOGGER.info("Scrolling vertically")
 

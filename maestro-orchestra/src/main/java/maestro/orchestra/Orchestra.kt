@@ -697,14 +697,40 @@ class Orchestra(
         val endTime = System.currentTimeMillis() + command.timeout.toLong()
         val direction = command.direction.toSwipeDirection()
         val deviceInfo = maestro.deviceInfo()
+        val withinSelector = command.withinElementSelector
+
+        val containerBounds: Bounds? = if (withinSelector != null) {
+            val container = findElement(withinSelector, optional = false).element
+            val containerVis = container.getVisiblePercentage(deviceInfo.widthGrid, deviceInfo.heightGrid)
+            if (containerVis < 0.5) {
+                throw MaestroException.ElementNotFound(
+                    "Container '${withinSelector.description()}' is not sufficiently visible (${"%.0f".format(containerVis * 100)}%). Scroll it into view first.",
+                    maestro.viewHierarchy().root,
+                    debugMessage = "The container element matched by '${withinSelector.description()}' is only ${"%.0f".format(containerVis * 100)}% visible on screen. " +
+                        "Use a separate scrollUntilVisible step to bring the container into view before scrolling within it."
+                )
+            }
+            container.bounds
+        } else null
+
+        val scopedSelector = if (withinSelector != null && command.selector.childOf == null) {
+            command.selector.copy(childOf = withinSelector)
+        } else {
+            command.selector
+        }
 
         var retryCenterCount = 0
-        val maxRetryCenterCount = 4 // for when the list is no longer scrollable (last element) but the element is visible
+        val maxRetryCenterCount = 4
 
         do {
             try {
-                val element = findElement(command.selector, command.optional, 500).element
-                val visibility = element.getVisiblePercentage(deviceInfo.widthGrid, deviceInfo.heightGrid)
+                val element = findElement(scopedSelector, command.optional, 500).element
+
+                val visibility = if (containerBounds != null) {
+                    element.getVisiblePercentageWithinBounds(containerBounds)
+                } else {
+                    element.getVisiblePercentage(deviceInfo.widthGrid, deviceInfo.heightGrid)
+                }
 
                 logger.info("Scrolling try count: $retryCenterCount, DeviceWidth: ${deviceInfo.widthGrid}, DeviceWidth: ${deviceInfo.heightGrid}")
                 logger.info("Element bounds: ${element.bounds}")
@@ -723,11 +749,21 @@ class Orchestra(
             } catch (ignored: MaestroException.ElementNotFound) {
                 logger.warn("Error: $ignored")
             }
-            maestro.swipeFromCenter(
-                direction,
-                durationMs = command.scrollDuration.toLong(),
-                waitToSettleTimeoutMs = command.waitToSettleTimeoutMs
-            )
+
+            if (containerBounds != null) {
+                maestro.swipeWithinBounds(
+                    bounds = containerBounds,
+                    swipeDirection = direction,
+                    durationMs = command.scrollDuration.toLong(),
+                    waitToSettleTimeoutMs = command.waitToSettleTimeoutMs
+                )
+            } else {
+                maestro.swipeFromCenter(
+                    direction,
+                    durationMs = command.scrollDuration.toLong(),
+                    waitToSettleTimeoutMs = command.waitToSettleTimeoutMs
+                )
+            }
         } while (System.currentTimeMillis() < endTime)
 
         val debugMessage = buildString {

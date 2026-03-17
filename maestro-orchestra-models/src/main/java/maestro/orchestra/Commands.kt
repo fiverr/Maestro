@@ -102,6 +102,7 @@ data class SwipeCommand(
 data class ScrollUntilVisibleCommand(
     val selector: ElementSelector,
     val direction: ScrollDirection,
+    val withinElementSelector: ElementSelector? = null,
     val scrollDuration: String = DEFAULT_SCROLL_DURATION,
     val visibilityPercentage: Int,
     val timeout: String = DEFAULT_TIMEOUT_IN_MILLIS,
@@ -118,6 +119,9 @@ data class ScrollUntilVisibleCommand(
         get() {
             val baseDescription = "Scrolling $direction until ${selector.description()} is visible"
             val additionalDescription = mutableListOf<String>()
+            withinElementSelector?.let {
+                additionalDescription.add("within ${it.description()}")
+            }
             additionalDescription.add("with speed $originalSpeedValue")
             additionalDescription.add("visibility percentage $visibilityPercentage%")
             additionalDescription.add("timeout $timeout ms")
@@ -149,6 +153,7 @@ data class ScrollUntilVisibleCommand(
         return copy(
             originalSpeedValue = scrollDuration,
             selector = selector.evaluateScripts(jsEngine),
+            withinElementSelector = withinElementSelector?.evaluateScripts(jsEngine),
             scrollDuration = scrollDuration.evaluateScripts(jsEngine).speedToDuration(),
             timeout = timeout.evaluateScripts(jsEngine).timeoutToMillis(),
             label = label?.evaluateScripts(jsEngine)

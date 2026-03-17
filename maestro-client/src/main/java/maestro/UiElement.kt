@@ -46,6 +46,17 @@ data class UiElement(
         return visibleArea.toDouble() / totalArea.toDouble()
     }
 
+    fun getVisiblePercentageWithinBounds(containerBounds: Bounds): Double {
+        if (bounds.width == 0 && bounds.height == 0) return 0.0
+
+        val visibleX = maxOf(0, minOf(bounds.x + bounds.width, containerBounds.x + containerBounds.width) - maxOf(bounds.x, containerBounds.x))
+        val visibleY = maxOf(0, minOf(bounds.y + bounds.height, containerBounds.y + containerBounds.height) - maxOf(bounds.y, containerBounds.y))
+        val visibleArea = visibleX * visibleY
+        val totalArea = bounds.width * bounds.height
+
+        return visibleArea.toDouble() / totalArea.toDouble()
+    }
+
     fun isElementNearScreenCenter(direction: SwipeDirection, screenWidth: Int, screenHeight: Int): Boolean {
         val centerX = screenWidth / 2
         val centerY = screenHeight / 2

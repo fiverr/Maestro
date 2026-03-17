@@ -7,6 +7,7 @@ import com.google.common.truth.Truth.assertThat
 import maestro.DeviceOrientation
 import maestro.KeyCode
 import maestro.Point
+import maestro.ScrollDirection
 import org.intellij.lang.annotations.Language
 import org.junit.jupiter.api.Test
 
@@ -691,6 +692,53 @@ internal class MaestroCommandSerializationTest {
               }
             }
           """.trimIndent()
+        assertThat(serializedCommandJson)
+            .isEqualTo(expectedJson)
+        assertThat(deserializedCommand)
+            .isEqualTo(command)
+    }
+
+    @Test
+    fun `serialize ScrollUntilVisibleCommand with withinElementSelector`() {
+        // given
+        val command = MaestroCommand(
+            ScrollUntilVisibleCommand(
+                selector = ElementSelector(textRegex = "Target Item"),
+                direction = ScrollDirection.LEFT,
+                withinElementSelector = ElementSelector(idRegex = "carousel_container"),
+                visibilityPercentage = 100,
+                centerElement = false
+            )
+        )
+
+        // when
+        val serializedCommandJson = command.toJson()
+        val deserializedCommand = objectMapper.readValue(serializedCommandJson, MaestroCommand::class.java)
+
+        // then
+        @Language("json")
+        val expectedJson = """
+            {
+              "scrollUntilVisible" : {
+                "selector" : {
+                  "textRegex" : "Target Item",
+                  "optional" : false
+                },
+                "direction" : "LEFT",
+                "withinElementSelector" : {
+                  "idRegex" : "carousel_container",
+                  "optional" : false
+                },
+                "scrollDuration" : "40",
+                "visibilityPercentage" : 100,
+                "timeout" : "20000",
+                "centerElement" : false,
+                "originalSpeedValue" : "40",
+                "optional" : false
+              }
+            }
+          """.trimIndent()
+
         assertThat(serializedCommandJson)
             .isEqualTo(expectedJson)
         assertThat(deserializedCommand)

@@ -989,6 +989,7 @@ data class YamlFluentCommand(
             ScrollUntilVisibleCommand(
                 selector = toElementSelector(yaml.element),
                 direction = yaml.direction,
+                withinElementSelector = yaml.withinElement?.let { toElementSelector(it) },
                 timeout = yaml.timeout,
                 scrollDuration = yaml.speed,
                 visibilityPercentage = visibility,
