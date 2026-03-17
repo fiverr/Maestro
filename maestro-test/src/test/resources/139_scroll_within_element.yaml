@@ -1,0 +1,15 @@
+appId: com.example.app
+---
+- scrollUntilVisible:
+    element:
+      id: "action_movies_carousel"
+    direction: DOWN
+
+- scrollUntilVisible:
+    element:
+      text: "Item 15"
+    direction: LEFT
+    withinElement:
+      id: "horizontal_carousel"
+    timeout: 15000
+    speed: 40

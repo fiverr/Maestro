@@ -1,0 +1,9 @@
+appId: com.example.app
+---
+- scrollUntilVisible:
+    element: "Target Item"
+    direction: LEFT
+    withinElement:
+      id: "carousel_container"
+    timeout: 15000
+    speed: 40

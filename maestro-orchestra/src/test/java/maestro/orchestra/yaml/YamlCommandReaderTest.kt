@@ -781,6 +781,26 @@ internal class YamlCommandReaderTest {
     }
 
 
+    @Test
+    fun scrollUntilVisibleWithinElement(
+        @YamlFile("031_scroll_until_visible_within_element.yaml") commands: List<Command>
+    ) {
+        assertThat(commands).containsExactly(
+            ApplyConfigurationCommand(MaestroConfig(
+                appId = "com.example.app"
+            )),
+            ScrollUntilVisibleCommand(
+                selector = ElementSelector(textRegex = "Target Item"),
+                direction = ScrollDirection.LEFT,
+                withinElementSelector = ElementSelector(idRegex = "carousel_container"),
+                timeout = "15000",
+                scrollDuration = "40",
+                visibilityPercentage = 100,
+                centerElement = false
+            ),
+        )
+    }
+
     private fun commands(vararg commands: Command): List<MaestroCommand> =
         commands.map(::MaestroCommand).toList()
 }
